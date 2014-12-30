@@ -6,6 +6,12 @@ $(document).ready(function(){
     $('#chatText').val('');
   });
 
+  $('#chatText').keyup(function(e) {
+    /*e.preventDefault();*/
+    if (e.keyCode === 13) {
+      $('#chatButton').click();
+    }
+  });
 
   var message = {
     'username': window.location.search.slice(10),

@@ -95,5 +95,6 @@ form input[type=text] {
 }
 
 #chatText {
-    width: 1007px;
+  width: 1067px;
+  margin-top: 20px;
 }
