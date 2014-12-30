@@ -84,6 +84,7 @@ form input[type=text] {
 .spinner img {
     padding: 10px;
 }
+
 #scrollboxCover {
     position: absolute;
     top: 342px;
@@ -91,4 +92,8 @@ form input[type=text] {
     height: 40px;
     background-color: white;
     margin-left: -2px;
+}
+
+#chatText {
+    width: 1007px;
 }
