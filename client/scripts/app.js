@@ -120,9 +120,9 @@ $(document).ready(function(){
     for (var key in storage) {
       // if message objects have roomname equal to currenChatRoom and appended doesn't exist or false
       if (storage[key].roomname === currentChatRoom && !storage[key].appended) {
-        // create an element and set its' innerText equal to the data associated with that message object
+        // create an element and set its' innerText equal to the data associated with that message object and allow username selection
         var newMessage = document.createElement('div');
-        newMessage.innerText = storage[key].username + ': ' + storage[key].text + ', ' + storage[key].roomname;
+        $(newMessage).html('<a href="#">' + storage[key].username + '</a>' + ': ' + storage[key].text);
         // append to dom
         $('#main').prepend(newMessage);
         //add appended property to storage object
@@ -130,6 +130,8 @@ $(document).ready(function(){
       }
     }
   };
+
+  /*<div><a>username</a>text + roomname</div>*/
 
   ///////////////// Update Messages and Chatrooms /////////////////
 
