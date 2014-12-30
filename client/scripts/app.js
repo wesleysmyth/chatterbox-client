@@ -123,6 +123,10 @@ $(document).ready(function(){
         // create an element and set its' innerText equal to the data associated with that message object and allow username selection
         var newMessage = document.createElement('div');
         $(newMessage).html('<a href="#">' + storage[key].username + '</a>' + ': ' + storage[key].text);
+        // bold message if in friends
+        if (storage[key].username === friends[storage[key].username]) {
+          $(newMessage).css('font-weight', 'bold');
+        }
         // append to dom
         $('#main').prepend(newMessage);
         //add appended property to storage object
@@ -131,7 +135,29 @@ $(document).ready(function(){
     }
   };
 
-  /*<div><a>username</a>text + roomname</div>*/
+  ///////////////// Socializing /////////////////
+
+  // every username click, store username in friends object
+  var friends = {};
+  $('body').on('click', 'a', function() {
+    friends[this.innerText] = this.innerText;
+  });
+
+  // function to make all friend messages currently on DOM bold
+  var boldText = function() {
+    var DOMChildren = document.getElementById('main').children;
+    console.log(DOMChildren);
+    // looping through existing children on main
+    for (var i = 0; i < DOMChildren.length; i++) {
+      // if inner text is equal to friends[child.innertext]
+      if (DOMChildren[i].children[0].innerText === friends[DOMChildren[i].children[0].innerText]) {
+        // bold that node's text
+        $(DOMChildren[i]).css('font-weight', 'bold');
+      }
+    }
+  };
+
+  // within appendmessages, if username = friend, then set div text to bold
 
   ///////////////// Update Messages and Chatrooms /////////////////
 
@@ -142,11 +168,12 @@ $(document).ready(function(){
   setInterval(function() {
     getMessage(10);
     createChatRooms();
+    boldText();
     // if chat is selected
     if (currentChatRoom) {
       // run append for that chatroom
       appendMessages();
     }
-  }, 1000);
+  }, 100);
 
 });
