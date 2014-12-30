@@ -1,12 +1,12 @@
 body {
-    background: #eee;
+    background: #fafafa;
     text-align: center;
     padding: 0 25px;
-    font-family: arial, sans-serif;
+    font-family: Verdana, arial, sans-serif;
 }
 
 #main {
-    width: 500px;
+    width: 1000px;
     margin: auto;
     text-align: left;
     background: white;
