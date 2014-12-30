@@ -14,7 +14,6 @@ $.ajax({
   contentType: 'application/json',
   success: function (data) {
     console.log('chatterbox: Message sent');
-    console.dir(data);
   },
   error: function (data) {
     // see: https://developer.mozilla.org/en-US/docs/Web/API/console.error
@@ -22,26 +21,31 @@ $.ajax({
   }
 });
 
+// create object to store existing message IDs
+var storage = {};
 
-var getMessage = function(){
+var getMessage = function(limit){
  $.ajax({
    // always use this url
    url: 'https://api.parse.com/1/classes/chatterbox/',
    type: 'GET',
    contentType: 'application/json',
-   data: {order: '-createdAt', limit: 10},
+   data: {order: '-createdAt', limit: limit},
    success: function (data) {
      console.log('chatterbox: Message received');
-     console.dir(data);
      //grab data from server, loop through array of objects
      var messages = data.results;
      // for each object, select what we want to display on the screen
      for (var i = 0; i < messages.length; i++) {
-       var newMessage = document.createElement('div');
-       // create an element and set its' innerText to the data associated with that object
-       newMessage.innerText = messages[i].username + ': ' + messages[i].text;
-       // append element to h1
-       $('#main').append(newMessage);
+       // If message ID does not exist in storage
+       if (!storage[messages[i].objectId]) {
+         // create an element and set its' innerText to the data associated with that object
+         var newMessage = document.createElement('div');
+         newMessage.innerText = messages[i].username + ': ' + messages[i].text;
+         // append to dom and add ID to storage
+         $('#main').prepend(newMessage);
+         storage[messages[i].objectId] = messages[i].objectId;
+       }
      }
    },
    error: function (data) {
@@ -51,12 +55,12 @@ var getMessage = function(){
  });
 };
 
-getMessage();
+getMessage(10);
 
-// set interval to
-/*setInterval(function() {
-  getMessage();
-}, 3000)*/
+// Interval to refresh chat
+setInterval(function() {
+  getMessage(10);
+}, 1000);
 
 
 
