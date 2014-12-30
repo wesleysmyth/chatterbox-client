@@ -19,7 +19,7 @@ $(document).ready(function(){
   var message = {
     'username': window.location.search.slice(10),
     'text': '',
-    'roomname': "Kiran's Place"
+    'roomname': ''
   };
 
   var sendMessage = function() {
@@ -100,6 +100,8 @@ $(document).ready(function(){
   $('body').on('click', '.room', function(){
     oldChatRoom = currentChatRoom;
     currentChatRoom = this.innerText;
+    // sets roomname property on our message
+    message['roomname'] = currentChatRoom;
     // if currentChatRoom is not equal to oldChatRoom
     if (currentChatRoom !== oldChatRoom) {
       // remove all current divs in #main
@@ -146,7 +148,6 @@ $(document).ready(function(){
   // function to make all friend messages currently on DOM bold
   var boldText = function() {
     var DOMChildren = document.getElementById('main').children;
-    console.log(DOMChildren);
     // looping through existing children on main
     for (var i = 0; i < DOMChildren.length; i++) {
       // if inner text is equal to friends[child.innertext]
@@ -161,7 +162,7 @@ $(document).ready(function(){
 
   ///////////////// Update Messages and Chatrooms /////////////////
 
-  getMessage(10);
+  getMessage(100);
   createChatRooms();
 
   // Interval to refresh chat and chatrooms
