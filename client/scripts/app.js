@@ -59,10 +59,7 @@ $(document).ready(function(){
        for (var i = 0; i < messages.length; i++) {
          // If message ID does not exist in storage
          if (!storage[messages[i].objectId]) {
-          var newMessage = document.createElement('div');
-          newMessage.innerText = messages[i].username + ': ' + messages[i].text + ', ' + messages[i].roomname;
-          // append to dom and add message object to storage
-          $('#main').prepend(newMessage);
+          // add message object to storage
            storage[messages[i].objectId] = messages[i];
          }
        }
@@ -84,7 +81,7 @@ $(document).ready(function(){
     // loop through storage object
     for (var key in storage) {
       // if storage chatroom is not a property of chatRooms object
-      if (!chatRooms[storage[key].roomname] && storage[key].roomname !== undefined) {
+      if (!chatRooms[storage[key].roomname] && storage[key].roomname !== undefined && storage[key].roomname !== '') {
         // add to chatRooms object
         chatRooms[storage[key].roomname] = storage[key].roomname;
         // append new chatroom to DOM
@@ -96,27 +93,43 @@ $(document).ready(function(){
     }
   };
 
-  // create global currentChatRoom variable string
+  // store oldChatRoom
+  var oldChatRoom;
+  // store currentChatRoom (just clicked by user)
   var currentChatRoom;
   $('body').on('click', '.room', function(){
+    oldChatRoom = currentChatRoom;
     currentChatRoom = this.innerText;
+    // if currentChatRoom is not equal to oldChatRoom
+    if (currentChatRoom !== oldChatRoom) {
+      // remove all current divs in #main
+      $('#main div').remove();
+      // loop through storage object
+      for (var key in storage) {
+        // if message object's roomname is equal to oldChatRoom, set message object's appended property to false
+        if (storage[key].roomname === oldChatRoom) {
+          storage[key].appended = false;
+        }
+      }
+    }
   });
 
-    // create function to append messages in chatroom
-    var appendMessages = function() {
-      // if clicked chatroom is not equal to currentChatRoom
-        // update currentChatRoom to clicked, update all appended properties for objects in the old chatroom to false
-        // remove all current divs in #main
-      // loop through storage,
-        // if associated with that chatroom and had not already been appended
-          // create an element and set its' innerText to the data associated with that object
-          var newMessage = document.createElement('div');
-          newMessage.innerText = messages[i].username + ': ' + messages[i].text + ', ' + messages[i].roomname;
-          // append to dom and add message object to storage
-          $('#main').prepend(newMessage);
-          //add appended property to storage object
+  // create function to append messages in chatroom
+  var appendMessages = function() {
+    // loop through storage which holds all of our message objects
+    for (var key in storage) {
+      // if message objects have roomname equal to currenChatRoom and appended doesn't exist or false
+      if (storage[key].roomname === currentChatRoom && !storage[key].appended) {
+        // create an element and set its' innerText equal to the data associated with that message object
+        var newMessage = document.createElement('div');
+        newMessage.innerText = storage[key].username + ': ' + storage[key].text + ', ' + storage[key].roomname;
+        // append to dom
+        $('#main').prepend(newMessage);
+        //add appended property to storage object
+        storage[key].appended = true;
+      }
     }
-
+  };
 
   ///////////////// Update Messages and Chatrooms /////////////////
 
@@ -128,7 +141,10 @@ $(document).ready(function(){
     getMessage(10);
     createChatRooms();
     // if chat is selected
+    if (currentChatRoom) {
       // run append for that chatroom
+      appendMessages();
+    }
   }, 1000);
 
 });
