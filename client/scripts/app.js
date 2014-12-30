@@ -90,17 +90,17 @@ $(document).ready(function(){
         // append new chatroom to DOM
         var newChat = document.createElement('button');
         newChat.innerText = storage[key].roomname;
-        $(newChat).css('display', 'block').css('margin', '0 auto').css('margin-top','20px').attr('class', storage[key].roomname);
+        $(newChat).css('display', 'block').css('margin', '0 auto').css('margin-top','20px').attr('class', 'room');
         $('body').append(newChat);
       }
     }
   };
 
   // create global currentChatRoom variable string
-  var currentChatRoom = $('button').on('click', function(){
-    return $(this).val();
+  var currentChatRoom;
+  $('body').on('click', '.room', function(){
+    currentChatRoom = this.innerText;
   });
-  console.log(currentChatRoom);
 
     // create function to append messages in chatroom
     var appendMessages = function() {
