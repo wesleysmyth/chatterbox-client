@@ -1,5 +1,8 @@
 // YOUR CODE HERE:
 $(document).ready(function(){
+
+  ///////////////// Send Messages /////////////////
+
   $('#chatButton').on('click', function() {
     message['text'] = $('#chatText').val();
     sendMessage();
@@ -16,10 +19,8 @@ $(document).ready(function(){
   var message = {
     'username': window.location.search.slice(10),
     'text': '',
-    'roomname': '4chan'
+    'roomname': "WES' PLACE"
   };
-
-
 
   var sendMessage = function() {
     $.ajax({
@@ -38,7 +39,9 @@ $(document).ready(function(){
     });
   };
 
-  // create object to store existing message objectIds displayed in chat
+  ///////////////// Get & Display Messages /////////////////
+
+  // create object to store existing message objects displayed in chat
   var storage = {};
 
   var getMessage = function(limit){
@@ -58,10 +61,10 @@ $(document).ready(function(){
          if (!storage[messages[i].objectId]) {
            // create an element and set its' innerText to the data associated with that object
            var newMessage = document.createElement('div');
-           newMessage.innerText = messages[i].username + ': ' + messages[i].text;
-           // append to dom and add ID to storage
+           newMessage.innerText = messages[i].username + ': ' + messages[i].text + ', ' + messages[i].roomname;
+           // append to dom and add message object to storage
            $('#main').prepend(newMessage);
-           storage[messages[i].objectId] = messages[i].objectId;
+           storage[messages[i].objectId] = messages[i];
          }
        }
      },
@@ -72,11 +75,36 @@ $(document).ready(function(){
    });
   };
 
-  getMessage(10);
+  ///////////////// Chatroom Display /////////////////
 
-  // Interval to refresh chat
+  // object to track existing chatrooms in DOM
+  var chatRooms = {};
+
+  // check whether storage objects have any chatrooms that chatRooms object does not
+  var createChatRooms = function () {
+    // loop through storage object
+    for (var key in storage) {
+      // if storage chatroom is not a property of chatRooms object
+      if (!chatRooms[storage[key].roomname]) {
+        // add to chatRooms object
+        chatRooms[storage[key].roomname] = storage[key].roomname;
+        // append new chatroom to DOM
+        var newChat = document.createElement('div');
+        newChat.innerText = storage[key].roomname;
+        $('body').append(newChat);
+      }
+    }
+  };
+
+  ///////////////// Update Messages and Chatrooms /////////////////
+
+  getMessage(10);
+  createChatRooms();
+
+  // Interval to refresh chat and chatrooms
   setInterval(function() {
     getMessage(10);
+    createChatRooms();
   }, 1000);
 
 });
