@@ -1,33 +1,34 @@
 // YOUR CODE HERE:
-$(document).ready(function(){
 
-  ///////////////// Send Messages /////////////////
+var app = {
 
-  $('#chatButton').on('click', function() {
-    message['text'] = $('#chatText').val();
-    sendMessage();
-    $('#chatText').val('');
-  });
-
-  $('#chatText').keyup(function(e) {
-    /*e.preventDefault();*/
-    if (e.keyCode === 13) {
-      $('#chatButton').click();
-    }
-  });
-
-  var message = {
+  message: {
     'username': window.location.search.slice(10),
     'text': '',
     'roomname': ''
-  };
+  },
 
-  var sendMessage = function() {
+  // create object to store existing message objects displayed in chat
+  storage: {},
+
+  // object to track existing chatrooms in DOM
+  chatRooms: {},
+
+  // store oldChatRoom
+  oldChatRoom: undefined,
+
+  // store currentChatRoom (just clicked by user)
+  currentChatRoom: undefined,
+
+  // every username click, store username in friends object
+  friends: {},
+
+  sendMessage: function() {
     $.ajax({
       // always use this url
       url: 'https://api.parse.com/1/classes/chatterbox',
       type: 'POST',
-      data: JSON.stringify(message),
+      data: JSON.stringify(app.message),
       contentType: 'application/json',
       success: function (data) {
         console.log('chatterbox: Message sent');
@@ -37,14 +38,9 @@ $(document).ready(function(){
         console.error('chatterbox: Failed to send message');
       }
     });
-  };
+  },
 
-  ///////////////// Get & Display Messages /////////////////
-
-  // create object to store existing message objects displayed in chat
-  var storage = {};
-
-  var getMessage = function(limit){
+  getMessage: function(limit){
    $.ajax({
      // always use this url
      url: 'https://api.parse.com/1/classes/chatterbox/',
@@ -58,9 +54,9 @@ $(document).ready(function(){
        // for each object, select what we want to display on the screen
        for (var i = 0; i < messages.length; i++) {
          // If message ID does not exist in storage
-         if (!storage[messages[i].objectId]) {
+         if (!app.storage[messages[i].objectId]) {
           // add message object to storage
-           storage[messages[i].objectId] = messages[i];
+           app.storage[messages[i].objectId] = messages[i];
          }
        }
      },
@@ -69,112 +65,120 @@ $(document).ready(function(){
        console.error('chatterbox: Failed to receive message');
      }
    });
-  };
-
-  ///////////////// Chatroom Display /////////////////
-
-  // object to track existing chatrooms in DOM
-  var chatRooms = {};
+  },
 
   // check whether storage objects have any chatrooms that chatRooms object does not
-  var createChatRooms = function () {
+  createChatRooms: function () {
     // loop through storage object
-    for (var key in storage) {
+    for (var key in app.storage) {
       // if storage chatroom is not a property of chatRooms object
-      if (!chatRooms[storage[key].roomname] && storage[key].roomname !== undefined && storage[key].roomname !== '') {
+      if (!app.chatRooms[app.storage[key].roomname] && app.storage[key].roomname !== undefined && app.storage[key].roomname !== '') {
         // add to chatRooms object
-        chatRooms[storage[key].roomname] = storage[key].roomname;
+        app.chatRooms[app.storage[key].roomname] = app.storage[key].roomname;
         // append new chatroom to DOM
         var newChat = document.createElement('button');
-        newChat.innerText = storage[key].roomname;
+        newChat.innerText = app.storage[key].roomname;
         $(newChat).css('display', 'block').css('margin', '0 auto').css('margin-top','20px').attr('class', 'room');
         $('body').append(newChat);
       }
     }
-  };
-
-  // store oldChatRoom
-  var oldChatRoom;
-  // store currentChatRoom (just clicked by user)
-  var currentChatRoom;
-  $('body').on('click', '.room', function(){
-    oldChatRoom = currentChatRoom;
-    currentChatRoom = this.innerText;
-    // sets roomname property on our message
-    message['roomname'] = currentChatRoom;
-    // if currentChatRoom is not equal to oldChatRoom
-    if (currentChatRoom !== oldChatRoom) {
-      // remove all current divs in #main
-      $('#main div').remove();
-      // loop through storage object
-      for (var key in storage) {
-        // if message object's roomname is equal to oldChatRoom, set message object's appended property to false
-        if (storage[key].roomname === oldChatRoom) {
-          storage[key].appended = false;
-        }
-      }
-    }
-  });
+  },
 
   // create function to append messages in chatroom
-  var appendMessages = function() {
+  appendMessages: function() {
     // loop through storage which holds all of our message objects
-    for (var key in storage) {
+    for (var key in app.storage) {
       // if message objects have roomname equal to currenChatRoom and appended doesn't exist or false
-      if (storage[key].roomname === currentChatRoom && !storage[key].appended) {
+      if (app.storage[key].roomname === app.currentChatRoom && !app.storage[key].appended) {
         // create an element and set its' innerText equal to the data associated with that message object and allow username selection
         var newMessage = document.createElement('div');
-        $(newMessage).html('<a href="#">' + storage[key].username + '</a>' + ': ' + storage[key].text);
+        $(newMessage).html('<a href="#">' + app.storage[key].username + '</a>' + ': ' + app.storage[key].text);
         // bold message if in friends
-        if (storage[key].username === friends[storage[key].username]) {
+        if (app.storage[key].username === app.friends[app.storage[key].username]) {
           $(newMessage).css('font-weight', 'bold');
         }
         // append to dom
         $('#main').prepend(newMessage);
         //add appended property to storage object
-        storage[key].appended = true;
+        app.storage[key].appended = true;
       }
     }
-  };
-
-  ///////////////// Socializing /////////////////
-
-  // every username click, store username in friends object
-  var friends = {};
-  $('body').on('click', 'a', function() {
-    friends[this.innerText] = this.innerText;
-  });
+  },
 
   // function to make all friend messages currently on DOM bold
-  var boldText = function() {
+  boldText: function() {
     var DOMChildren = document.getElementById('main').children;
     // looping through existing children on main
     for (var i = 0; i < DOMChildren.length; i++) {
       // if inner text is equal to friends[child.innertext]
-      if (DOMChildren[i].children[0].innerText === friends[DOMChildren[i].children[0].innerText]) {
+      if (DOMChildren[i].children[0].innerText === app.friends[DOMChildren[i].children[0].innerText]) {
         // bold that node's text
         $(DOMChildren[i]).css('font-weight', 'bold');
       }
     }
-  };
+  },
 
-  // within appendmessages, if username = friend, then set div text to bold
+  // init kicks off all necessary callback functions, initializing functions, and updates
+  init: function(){
 
-  ///////////////// Update Messages and Chatrooms /////////////////
+    // user clicks or enters submit to send message to chat
+    $('#chatButton').on('click', function() {
+      app.message['text'] = $('#chatText').val();
+      app.sendMessage();
+      $('#chatText').val('');
+    });
 
-  getMessage(100);
-  createChatRooms();
+    $('#chatText').keyup(function(e) {
+      /*e.preventDefault();*/
+      if (e.keyCode === 13) {
+        $('#chatButton').click();
+      }
+    });
 
-  // Interval to refresh chat and chatrooms
-  setInterval(function() {
-    getMessage(10);
-    createChatRooms();
-    boldText();
-    // if chat is selected
-    if (currentChatRoom) {
-      // run append for that chatroom
-      appendMessages();
-    }
-  }, 100);
+    // on click, create chat room, and remove any old chat room messages
+    $('body').on('click', '.room', function(){
+      app.oldChatRoom = app.currentChatRoom;
+      app.currentChatRoom = this.innerText;
+      // sets roomname property on our message
+      app.message['roomname'] = app.currentChatRoom;
+      // if currentChatRoom is not equal to oldChatRoom
+      if (app.currentChatRoom !== app.oldChatRoom) {
+        // remove all current divs in #main
+        $('#main div').remove();
+        // loop through app.storage object
+        for (var key in app.storage) {
+          // if message object's roomname is equal to oldChatRoom, set message object's appended property to false
+          if (app.storage[key].roomname === app.oldChatRoom) {
+            app.storage[key].appended = false;
+          }
+        }
+      }
+    });
 
-});
+    // on click, store chat room to be created
+    $('body').on('click', 'a', function() {
+      app.friends[this.innerText] = this.innerText;
+    });
+
+    // these function calls are related to updating the client
+
+    app.getMessage(100);
+    app.createChatRooms();
+
+    // Interval to refresh chat and chatrooms
+    setInterval(function() {
+      app.getMessage(10);
+      app.createChatRooms();
+      app.boldText();
+      // if chat is selected
+      if (app.currentChatRoom) {
+        // run append for that chatroom
+        app.appendMessages();
+      }
+    }, 100);
+  }
+
+};
+
+
+
